@@ -1,0 +1,592 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Govindharajan Mukund — Curriculum Vitae</title>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    /* ── TOKENS ──────────────────────────────────────── */
+    :root {
+      --navy:      #1a2744;
+      --navy-mid:  #243260;
+      --accent:    #2c4a8e;
+      --accent2:   #3d6ab5;
+      --gold:      #b8922a;
+      --rule:      #c8d0de;
+      --bg:        #f8f7f4;
+      --card:      #ffffff;
+      --text:      #1c2333;
+      --muted:     #4a5568;
+      --light:     #6b7a99;
+      --tag-bg:    #edf0f7;
+      --tag-text:  #2c4a8e;
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'EB Garamond', 'Times New Roman', Georgia, serif;
+      font-size: 17px;
+      line-height: 1.75;
+    }
+
+    /* ── TOP BAR ──────────────────────────────────────── */
+    .topbar {
+      background: var(--navy);
+      padding: 14px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      border-bottom: 3px solid var(--gold);
+    }
+
+    .topbar-left {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.08em;
+    }
+
+    .topbar-left span { color: rgba(255,255,255,0.75); }
+
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 22px;
+      background: var(--gold);
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      text-decoration: none;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.2s;
+    }
+
+    .btn-download:hover {
+      background: #a07820;
+      transform: translateY(-1px);
+    }
+
+    .btn-download svg { flex-shrink: 0; }
+
+    /* ── MAIN WRAPPER ─────────────────────────────────── */
+    .page {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 60px 40px 100px;
+    }
+
+    /* ── HEADER BLOCK ─────────────────────────────────── */
+    .cv-header {
+      text-align: center;
+      padding-bottom: 36px;
+      border-bottom: 2px solid var(--navy);
+      margin-bottom: 44px;
+    }
+
+    .cv-name {
+      font-size: 2.9rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      color: var(--navy);
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .cv-title {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--light);
+      letter-spacing: 0.04em;
+      margin-bottom: 22px;
+    }
+
+    .cv-contacts {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 6px 28px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .cv-contacts a {
+      color: var(--accent2);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.18s;
+    }
+
+    .cv-contacts a:hover { border-color: var(--accent2); }
+
+    .sep {
+      color: var(--rule);
+      user-select: none;
+    }
+
+    /* ── SECTION ──────────────────────────────────────── */
+    .cv-section {
+      margin-bottom: 42px;
+    }
+
+    .cv-section-title {
+      font-size: 0.78rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--navy);
+      border-bottom: 1.5px solid var(--navy);
+      padding-bottom: 6px;
+      margin-bottom: 22px;
+    }
+
+    /* ── SUMMARY ──────────────────────────────────────── */
+    .summary-text {
+      font-size: 1rem;
+      color: var(--muted);
+      text-align: justify;
+      hyphens: auto;
+    }
+
+    /* ── EDUCATION ────────────────────────────────────── */
+    .edu-block {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 6px;
+    }
+
+    .edu-left h3 {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .edu-left p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      font-style: italic;
+    }
+
+    .edu-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .edu-right .yr {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--light);
+      letter-spacing: 0.04em;
+    }
+
+    .edu-right .cgpa {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.82rem;
+      color: var(--accent);
+      margin-top: 2px;
+    }
+
+    .coursework {
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .coursework strong {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    /* ── SKILLS GRID ──────────────────────────────────── */
+    .skills-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .skills-table tr {
+      border-bottom: 1px solid #e8ecf2;
+    }
+
+    .skills-table tr:last-child { border-bottom: none; }
+
+    .skills-table td {
+      padding: 10px 0;
+      vertical-align: top;
+    }
+
+    .skills-table td:first-child {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--navy-mid);
+      width: 240px;
+      padding-right: 20px;
+    }
+
+    .skills-table td:last-child {
+      font-size: 0.93rem;
+      color: var(--muted);
+    }
+
+    /* ── PROJECT CARDS ────────────────────────────────── */
+    .project-card {
+      background: var(--card);
+      border: 1px solid #dce3f0;
+      border-left: 4px solid var(--accent);
+      border-radius: 6px;
+      padding: 26px 28px;
+      margin-bottom: 22px;
+      box-shadow: 0 2px 12px rgba(28,35,51,0.06);
+    }
+
+    .project-card:last-child { margin-bottom: 0; }
+
+    .proj-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      margin-bottom: 10px;
+    }
+
+    .proj-header h3 {
+      font-size: 1.08rem;
+      font-weight: 600;
+      color: var(--navy);
+      line-height: 1.3;
+    }
+
+    .proj-type {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      color: var(--accent2);
+      background: var(--tag-bg);
+      border: 1px solid #c8d4ed;
+      padding: 3px 9px;
+      border-radius: 3px;
+      white-space: nowrap;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+      margin-top: 3px;
+    }
+
+    .project-card p {
+      font-size: 0.95rem;
+      color: var(--muted);
+      margin-bottom: 16px;
+      text-align: justify;
+      hyphens: auto;
+    }
+
+    .proj-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .proj-link {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      letter-spacing: 0.05em;
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid var(--accent2);
+      padding-bottom: 1px;
+      transition: color 0.18s;
+    }
+
+    .proj-link:hover { color: var(--gold); border-color: var(--gold); }
+
+    .proj-link-label {
+      color: var(--light);
+      font-size: 0.72rem;
+      margin-right: 3px;
+    }
+
+    /* ── LAB EXPERIENCE ───────────────────────────────── */
+    .exp-block {
+      font-size: 0.96rem;
+      color: var(--muted);
+      text-align: justify;
+      hyphens: auto;
+    }
+
+    /* ── ACTIVITIES ───────────────────────────────────── */
+    .activity-list {
+      list-style: none;
+      padding: 0;
+    }
+
+    .activity-list li {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 16px;
+      align-items: flex-start;
+    }
+
+    .activity-list li:last-child { margin-bottom: 0; }
+
+    .act-bullet {
+      margin-top: 7px;
+      width: 7px;
+      height: 7px;
+      background: var(--accent);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .act-content strong {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .act-content p {
+      font-size: 0.93rem;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+
+    /* ── CERT ─────────────────────────────────────────── */
+    .cert-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      font-size: 0.96rem;
+    }
+
+    .cert-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.68rem;
+      background: var(--navy);
+      color: #fff;
+      padding: 4px 10px;
+      border-radius: 3px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    /* ── PRINT / PDF ──────────────────────────────────── */
+    @media print {
+      .topbar { display: none; }
+      body { background: #fff; }
+      .page { padding: 20px 30px; }
+      .project-card { break-inside: avoid; }
+    }
+
+    /* ── RESPONSIVE ───────────────────────────────────── */
+    @media (max-width: 640px) {
+      .topbar { padding: 12px 18px; flex-wrap: wrap; gap: 10px; }
+      .page { padding: 36px 20px 80px; }
+      .cv-name { font-size: 2.1rem; }
+      .edu-block { flex-direction: column; gap: 4px; }
+      .edu-right { text-align: left; }
+      .proj-header { flex-direction: column; gap: 6px; }
+      .skills-table td:first-child { width: auto; display: block; padding-bottom: 2px; }
+      .skills-table td:last-child { display: block; padding-top: 0; }
+      .skills-table tr { display: block; margin-bottom: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <span>Govindharajan Mukund</span> &nbsp;/&nbsp; Curriculum Vitae
+    </div>
+    <button class="btn-download" onclick="window.print()">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      Download CV (PDF)
+    </button>
+  </div>
+
+  <main class="page">
+
+    <!-- HEADER -->
+    <header class="cv-header">
+      <h1 class="cv-name">Govindharajan Mukund</h1>
+      <p class="cv-title">Industrial Biotechnology &amp; Bioinformatics</p>
+      <div class="cv-contacts">
+        <a href="mailto:govindharajanmukund@gmail.com">govindharajanmukund@gmail.com</a>
+        <span class="sep">·</span>
+        <span>+91 95660 21111</span>
+        <span class="sep">·</span>
+        <a href="https://linkedin.com/in/govindharajanmukund1" target="_blank">LinkedIn</a>
+        <span class="sep">·</span>
+        <a href="https://govindharajan-portfolio.vercel.app/" target="_blank">Portfolio</a>
+      </div>
+    </header>
+
+    <!-- SUMMARY -->
+    <section class="cv-section">
+      <div class="cv-section-title">Summary</div>
+      <p class="summary-text">
+        Industrial Biotechnology undergraduate with hands-on wet lab experience in molecular biology techniques
+        and a growing specialization in computational bioinformatics tools for biological data analysis.
+        Experienced in DNA/RNA isolation, gel electrophoresis, ELISA, and enzyme assays, alongside development
+        of web-based platforms for genomic variant interpretation and <em>in-silico</em> molecular biology
+        workflows.
+      </p>
+    </section>
+
+    <!-- EDUCATION -->
+    <section class="cv-section">
+      <div class="cv-section-title">Education</div>
+      <div class="edu-block">
+        <div class="edu-left">
+          <h3>B.Tech Industrial Biotechnology</h3>
+          <p>Anna University</p>
+        </div>
+        <div class="edu-right">
+          <div class="yr">2023 – Present</div>
+          <div class="cgpa">CGPA: 5.83</div>
+        </div>
+      </div>
+      <p class="coursework">
+        <strong>Relevant Coursework:</strong> Cell &amp; Molecular Biology, Genetic Engineering, Immunology,
+        Cancer Biology, Bioinformatics, Mass Transfer Operations
+      </p>
+    </section>
+
+    <!-- TECHNICAL SKILLS -->
+    <section class="cv-section">
+      <div class="cv-section-title">Technical Skills</div>
+      <table class="skills-table">
+        <tbody>
+          <tr>
+            <td>Molecular Biology &amp; Wet Lab</td>
+            <td>DNA, RNA &amp; Protein Isolation; Agarose Gel Electrophoresis; ELISA; Enzyme Assays &amp; Kinetics; Cell Transformation; Blood Grouping; Peripheral Smear Preparation</td>
+          </tr>
+          <tr>
+            <td>Laboratory Practices</td>
+            <td>Micropipetting, Centrifugation, Reagent Preparation, Sterilization &amp; Safety Protocols, Structured Lab Documentation, Accuracy &amp; Reproducibility</td>
+          </tr>
+          <tr>
+            <td>Programming &amp; Bioinformatics</td>
+            <td>Python, C (basic), HTML/CSS, JavaScript, Basic Bioinformatics Workflows, Genomic Variant Interpretation Concepts</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- PROJECTS -->
+    <section class="cv-section">
+      <div class="cv-section-title">Projects</div>
+
+      <div class="project-card">
+        <div class="proj-header">
+          <h3>Genome Variant Interpretation Toolkit</h3>
+          <span class="proj-type">Bioinformatics Web App</span>
+        </div>
+        <p>
+          A full-stack web platform for SNP and CNV analysis supporting batch rsID queries and simulated
+          genomic variant annotation workflows inspired by dbSNP and ClinVar datasets. Built using Python
+          (Flask), HTML/CSS, and JSON-based genomic data models; deployed as an interactive genomics
+          analysis tool.
+        </p>
+        <div class="proj-links">
+          <a href="https://genome-variant-interpretation-toolkit-1.onrender.com" target="_blank" class="proj-link">
+            <span class="proj-link-label">↗</span>Live Demo
+          </a>
+          <a href="https://github.com/govindharajan-m/Genome-Variant-Interpretation-Toolkit" target="_blank" class="proj-link">
+            <span class="proj-link-label">⌥</span>GitHub Repository
+          </a>
+        </div>
+      </div>
+
+      <div class="project-card">
+        <div class="proj-header">
+          <h3>BioLab Toolkit — DNA Analysis &amp; Primer Design Tool</h3>
+          <span class="proj-type">Molecular Web Tool</span>
+        </div>
+        <p>
+          An interactive molecular biology web application for DNA sequence analysis, GC content calculation,
+          reverse complement generation, transcription simulation, primer design with melting temperature
+          estimation, and restriction enzyme digestion simulation.
+        </p>
+        <div class="proj-links">
+          <a href="https://govindharajan-m.github.io/biolab-toolkit/" target="_blank" class="proj-link">
+            <span class="proj-link-label">↗</span>Live Site
+          </a>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- LABORATORY EXPERIENCE -->
+    <section class="cv-section">
+      <div class="cv-section-title">Laboratory Experience</div>
+      <p class="exp-block">
+        Performed DNA isolation, agarose gel electrophoresis, ELISA, and enzyme assay experiments during
+        academic laboratory training. Maintained structured documentation of experimental protocols,
+        observations, and results while adhering to laboratory safety procedures. Demonstrated strong
+        proficiency in micropipetting, reagent preparation, and equipment handling with emphasis on
+        precision and reproducibility.
+      </p>
+    </section>
+
+    <!-- LEADERSHIP & ACTIVITIES -->
+    <section class="cv-section">
+      <div class="cv-section-title">Leadership &amp; Activities</div>
+      <ul class="activity-list">
+        <li>
+          <div class="act-bullet"></div>
+          <div class="act-content">
+            <strong>Head — Verve (University Biotechnology Magazine)</strong>
+            <p>Led editorial coordination, scientific content review, and contributor management.</p>
+          </div>
+        </li>
+        <li>
+          <div class="act-bullet"></div>
+          <div class="act-content">
+            <strong>Head of Scriptwriting — Anna University's Premiere Theatre Club</strong>
+            <p>Directed stage productions including narrative development and team coordination.</p>
+          </div>
+        </li>
+        <li>
+          <div class="act-bullet"></div>
+          <div class="act-content">
+            <strong>TEDx Volunteer &amp; Core Team Member</strong>
+            <p>Assisted in academic event organization and interdisciplinary teamwork.</p>
+          </div>
+        </li>
+      </ul>
+    </section>
+
+    <!-- CERTIFICATIONS -->
+    <section class="cv-section">
+      <div class="cv-section-title">Certifications</div>
+      <div class="cert-item">
+        <span class="cert-badge">NPTEL</span>
+        <span>Biomedical Nanotechnology</span>
+      </div>
+    </section>
+
+  </main>
+
+</body>
+</html>
