@@ -29,6 +29,8 @@
 
     html {
       scroll-behavior: smooth;
+      height: 100vh;
+      overflow: hidden;
     }
 
     body {
@@ -36,9 +38,13 @@
       color: var(--black);
       font-family: var(--mono);
       font-size: 13px;
+
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       position: relative;
+      height: 100vh;
+      overflow: hidden;
+      margin: 0;
     }
 
     a {
@@ -68,25 +74,30 @@
       max-width: 900px;
       margin: 0 auto;
       padding: 0 28px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
     }
 
     /* ── HEADER ───────────────────────────────────────── */
     header {
-      padding: 64px 0 40px;
+      padding: 24px 0 16px;
       text-align: center;
       border-bottom: 2px solid var(--black);
       position: relative;
+      flex-shrink: 0;
     }
 
     /* ── QR CODE ──────────────────────────────────────── */
     .qr-block {
       position: absolute;
-      top: 24px;
+      top: 10px;
       right: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 5px;
+      gap: 3px;
     }
 
     .qr-block canvas,
@@ -103,11 +114,11 @@
     }
 
     .name {
-      font-size: clamp(20px, 5vw, 36px);
+      font-size: clamp(18px, 4vw, 30px);
       font-weight: 700;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      margin-bottom: 20px;
+      margin-bottom: 10px;
       line-height: 1.1;
     }
 
@@ -138,7 +149,7 @@
       justify-content: center;
       align-items: center;
       flex-wrap: wrap;
-      margin-bottom: 14px;
+      margin-bottom: 8px;
       font-size: 12px;
       letter-spacing: 0.06em;
     }
@@ -167,7 +178,7 @@
     /* ── DIVIDER ──────────────────────────────────────── */
     .divider {
       text-align: center;
-      padding: 30px 0 0;
+      padding: 10px 0 0;
       font-size: 11px;
       letter-spacing: 0.2em;
       color: var(--green);
@@ -183,7 +194,15 @@
 
     /* ── SECTIONS ─────────────────────────────────────── */
     section {
-      padding: 52px 0 0;
+      padding: 12px 0 0;
+      flex-shrink: 0;
+    }
+
+    /* ── FLEX SPACER — distributes remaining viewport space ── */
+    .spacer {
+      flex: 1 1 0;
+      min-height: 8px;
+      max-height: 60px;
     }
 
     .section-head {
@@ -192,19 +211,19 @@
       letter-spacing: 0.22em;
       text-transform: uppercase;
       color: var(--green);
-      margin-bottom: 26px;
+      margin-bottom: 8px;
     }
 
     /* ── ABOUT ────────────────────────────────────────── */
     #about p {
-      font-size: 13px;
-      line-height: 1.85;
+      font-size: 12px;
+      line-height: 1.6;
       color: #222;
       max-width: 680px;
     }
 
     #about p+p {
-      margin-top: 12px;
+      margin-top: 6px;
     }
 
     /* ── PROJECTS ─────────────────────────────────────── */
@@ -290,7 +309,8 @@
 
     /* ── GENOME BROWSER CONTAINER ─────────────────────── */
     #genome-viz {
-      padding: 52px 0 0;
+      padding: 0;
+      flex-shrink: 0;
     }
 
     .browser-wrap {
@@ -329,8 +349,9 @@
 
     /* ── DNA FOOTER ───────────────────────────────────── */
     #dna-footer {
-      padding: 60px 0 0;
+      padding: 0;
       overflow: hidden;
+      flex-shrink: 0;
     }
 
     canvas#dna-canvas {
@@ -383,10 +404,10 @@
     <section id="about">
       <div class="section-head">// about</div>
       <p>I'm a biotechnology undergraduate with an interest in computational genomics and bioinformatics.</p>
-      <p>I have a background in DNA/RNA isolation, gel electrophoresis, ELISA, and enzyme kinetics,
-        along with half decent Python-based pipeline development knowledge, SQL , R and a budding
-        interest in applying machine learning to genomic data.</p>
     </section>
+
+    <div class="spacer"></div>
+
     <!-- GENOME BROWSER -->
     <section id="genome-viz">
       <div class="section-head">// genome browser — chr21:31,658,000–31,661,000 (SOD1 locus)</div>
@@ -399,6 +420,8 @@
         <canvas id="genome-canvas"></canvas>
       </div>
     </section>
+
+    <div class="spacer"></div>
 
     <!-- ANIMATED DNA -->
     <div id="dna-footer">
