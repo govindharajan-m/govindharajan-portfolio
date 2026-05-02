@@ -311,9 +311,14 @@
 
     /* ── DNA FOOTER ───────────────────────────────────── */
     #dna-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100vw;
+      z-index: 0;
       padding: 0;
       overflow: hidden;
-      flex-shrink: 0;
+      pointer-events: none;
     }
 
     canvas#dna-canvas {
@@ -324,8 +329,20 @@
 
     /* ── RESPONSIVE ───────────────────────────────────── */
     @media (max-width: 600px) {
+      .page {
+        padding: 0 16px;
+      }
+
       header {
         padding: 40px 0 28px;
+      }
+
+      .name {
+        font-size: 18px;
+      }
+
+      .qr-block {
+        display: none;
       }
 
       .skill-row {
@@ -334,6 +351,43 @@
 
       .skill-cat {
         margin-bottom: 2px;
+      }
+
+      .proj-item {
+        grid-template-columns: 20px 1fr;
+        gap: 0 8px;
+        padding: 10px 0;
+      }
+
+      .proj-title {
+        font-size: 12px;
+      }
+
+      .proj-desc {
+        font-size: 11px;
+      }
+
+      .proj-links-row {
+        gap: 12px;
+      }
+
+      .divider {
+        font-size: 10px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .page {
+        padding: 0 12px;
+      }
+
+      .nav-row a {
+        padding: 0 8px;
+        font-size: 11px;
+      }
+
+      .email {
+        font-size: 11px;
       }
     }
   </style>
@@ -413,12 +467,12 @@
 
     <div class="spacer"></div>
 
-    <!-- ANIMATED DNA -->
-    <div id="dna-footer">
-      <canvas id="dna-canvas"></canvas>
-    </div>
-
   </div><!-- /page -->
+
+  <!-- ANIMATED DNA (full-width, outside .page) -->
+  <div id="dna-footer">
+    <canvas id="dna-canvas"></canvas>
+  </div>
 
   <script>
     /* ═══════════════════════════════════════════════════════════
