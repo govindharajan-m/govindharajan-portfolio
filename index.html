@@ -41,6 +41,7 @@
       -webkit-font-smoothing: antialiased;
       position: relative;
       margin: 0;
+      padding-bottom: 80px;
     }
 
     a {
@@ -1206,12 +1207,13 @@
       if (!canvas) return;
       const ctx = canvas.getContext('2d');
       const PR = window.devicePixelRatio || 1;
-      const H = 100;
+      let H = Math.max(60, Math.min(120, window.innerHeight * 0.12));
       let W, t = 0;
 
       const BASE_COLORS = ['#1b5e20', '#b71c1c', '#0d47a1', '#e65100'];
 
       function resize() {
+        H = Math.max(60, Math.min(120, window.innerHeight * 0.12));
         W = canvas.parentElement.clientWidth;
         canvas.width = W * PR;
         canvas.height = H * PR;
@@ -1221,7 +1223,7 @@
       }
 
       function strandY(x, off) {
-        return H / 2 + 26 * Math.sin(x * 0.020 + t + off);
+        return H / 2 + (H * 0.26) * Math.sin(x * 0.020 + t + off);
       }
 
       function frame() {
