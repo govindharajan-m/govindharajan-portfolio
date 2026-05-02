@@ -309,7 +309,7 @@
 
 
 
-    /* ── DNA FOOTER (desktop: fixed full-width at bottom) ── */
+    /* ── DNA FOOTER ───────────────────────────────────── */
     #dna-footer {
       position: fixed;
       bottom: 0;
@@ -327,29 +327,10 @@
     }
 
 
-    /* ── RESPONSIVE: MOBILE ───────────────────────────── */
+    /* ── RESPONSIVE ───────────────────────────────────── */
     @media (max-width: 600px) {
-      html {
-        height: auto;
-        overflow: auto;
-      }
-
-      body {
-        height: auto;
-        overflow: auto;
-      }
-
       .page {
-        height: auto;
-        overflow: visible;
         padding: 0 16px;
-      }
-
-      #dna-footer {
-        position: relative;
-        width: 100%;
-        z-index: 1;
-        pointer-events: auto;
       }
 
       header {
@@ -611,602 +592,606 @@
 
 
 
-    const ctx = canvas.getContext('2d');
-    const PR = window.devicePixelRatio || 1;
 
-    // ── Color palette ─────────────────────────────────────
-    const C = {
-      gene: '#1565c0',
-      geneLight: '#90caf9',
-      exon: '#0d47a1',
-      arrow: '#42a5f5',
-      benign: '#2e7d32',
-      pathogenic: '#c62828',
-      vus: '#e65100',
-      chipFill: 'rgba(63,81,181,0.12)',
-      chipLine: '#3949ab',
-      covFill: 'rgba(46,125,50,0.12)',
-      covLine: '#388e3c',
-      consFill: 'rgba(46,125,50,0.18)',
-      consLine: '#2e7d32',
-      seqA: '#1b5e20',
-      seqT: '#b71c1c',
-      seqC: '#0d47a1',
-      seqG: '#e65100',
-      ruleText: '#444',
-      trackBg1: '#ffffff',
-      trackBg2: '#f9fbf9',
-      trackBgAlt: '#f4f7ff',
-      rowLine: '#e8e8e8',
-      labelCol: '#333',
-      labelGreen: '#2e7d32',
-      labelBlue: '#1565c0',
-      labelPurp: '#4527a0',
-      dark: '#1a1a2e',
-    };
+    (function () {
+      const canvas = document.getElementById('genome-canvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+      const PR = window.devicePixelRatio || 1;
 
-    const BASE_C = { A: C.seqA, T: C.seqT, C: C.seqC, G: C.seqG };
+      // ── Color palette ─────────────────────────────────────
+      const C = {
+        gene: '#1565c0',
+        geneLight: '#90caf9',
+        exon: '#0d47a1',
+        arrow: '#42a5f5',
+        benign: '#2e7d32',
+        pathogenic: '#c62828',
+        vus: '#e65100',
+        chipFill: 'rgba(63,81,181,0.12)',
+        chipLine: '#3949ab',
+        covFill: 'rgba(46,125,50,0.12)',
+        covLine: '#388e3c',
+        consFill: 'rgba(46,125,50,0.18)',
+        consLine: '#2e7d32',
+        seqA: '#1b5e20',
+        seqT: '#b71c1c',
+        seqC: '#0d47a1',
+        seqG: '#e65100',
+        ruleText: '#444',
+        trackBg1: '#ffffff',
+        trackBg2: '#f9fbf9',
+        trackBgAlt: '#f4f7ff',
+        rowLine: '#e8e8e8',
+        labelCol: '#333',
+        labelGreen: '#2e7d32',
+        labelBlue: '#1565c0',
+        labelPurp: '#4527a0',
+        dark: '#1a1a2e',
+      };
 
-    function resize() {
-      const W = canvas.parentElement.clientWidth;
-      // compute needed height dynamically
-      const H = computeHeight(W);
-      canvas.width = W * PR;
-      canvas.height = H * PR;
-      canvas.style.width = W + 'px';
-      canvas.style.height = H + 'px';
-      ctx.setTransform(PR, 0, 0, PR, 0, 0);
-      draw(W, H);
-    }
+      const BASE_C = { A: C.seqA, T: C.seqT, C: C.seqC, G: C.seqG };
 
-    // Track definitions: [id, label, sublabel, height, bgColor, labelColor]
-    const TRACKS = [
-      { id: 'ruler', label: '', h: 32, bg: '#f0f2f5' },
-      { id: 'gene', label: 'GENCODE V39', h: 34, bg: C.trackBg1, lc: C.labelBlue, sub: 'Gene Models' },
-      { id: 'refseq', label: 'RefSeq Curated', h: 24, bg: C.trackBg2, lc: C.labelCol, sub: 'NM transcripts' },
-      { id: 'omim', label: 'OMIM Alleles', h: 22, bg: C.trackBg1, lc: C.labelGreen, sub: 'Disease variants' },
-      { id: 'cov', label: 'Read Coverage', h: 64, bg: C.trackBg2, lc: C.labelGreen, sub: 'Depth (×)' },
-      { id: 'vars', label: 'ClinVar Variants', h: 44, bg: C.trackBg1, lc: C.labelCol, sub: 'P / LP / B / VUS' },
-      { id: 'chip', label: 'H3K27Ac ChIP-seq', h: 52, bg: C.trackBgAlt, lc: C.labelPurp, sub: 'Enhancer marks' },
-      { id: 'cons', label: 'PhyloP 100way', h: 40, bg: C.trackBg2, lc: C.labelGreen, sub: 'Conservation' },
-      { id: 'seq', label: 'Reference Seq', h: 20, bg: '#f0f0f0', lc: C.labelCol, sub: 'hg38 bases' },
-      { id: 'legend', label: '', h: 28, bg: '#fafafa' },
-    ];
-
-    function computeHeight(W) {
-      return TRACKS.reduce((sum, t) => sum + t.h, 0);
-    }
-
-    // Label column width — generous so labels are never clipped
-    const LBL = 138;
-
-    function draw(W, H) {
-      ctx.clearRect(0, 0, W, H);
-
-      const DX = LBL;
-      const DW = W - LBL - 8;
-      let y = 0;
-
-      // ── helpers ────────────────────────────────────────
-
-      function bg(ty, th, col) {
-        ctx.fillStyle = col;
-        ctx.fillRect(0, ty, W, th);
+      function resize() {
+        const W = canvas.parentElement.clientWidth;
+        // compute needed height dynamically
+        const H = computeHeight(W);
+        canvas.width = W * PR;
+        canvas.height = H * PR;
+        canvas.style.width = W + 'px';
+        canvas.style.height = H + 'px';
+        ctx.setTransform(PR, 0, 0, PR, 0, 0);
+        draw(W, H);
       }
 
-      function hline(ty, col, lw) {
-        ctx.strokeStyle = col || C.rowLine;
-        ctx.lineWidth = lw || 0.5;
-        ctx.beginPath(); ctx.moveTo(DX, ty); ctx.lineTo(W, ty); ctx.stroke();
+      // Track definitions: [id, label, sublabel, height, bgColor, labelColor]
+      const TRACKS = [
+        { id: 'ruler', label: '', h: 32, bg: '#f0f2f5' },
+        { id: 'gene', label: 'GENCODE V39', h: 34, bg: C.trackBg1, lc: C.labelBlue, sub: 'Gene Models' },
+        { id: 'refseq', label: 'RefSeq Curated', h: 24, bg: C.trackBg2, lc: C.labelCol, sub: 'NM transcripts' },
+        { id: 'omim', label: 'OMIM Alleles', h: 22, bg: C.trackBg1, lc: C.labelGreen, sub: 'Disease variants' },
+        { id: 'cov', label: 'Read Coverage', h: 64, bg: C.trackBg2, lc: C.labelGreen, sub: 'Depth (×)' },
+        { id: 'vars', label: 'ClinVar Variants', h: 44, bg: C.trackBg1, lc: C.labelCol, sub: 'P / LP / B / VUS' },
+        { id: 'chip', label: 'H3K27Ac ChIP-seq', h: 52, bg: C.trackBgAlt, lc: C.labelPurp, sub: 'Enhancer marks' },
+        { id: 'cons', label: 'PhyloP 100way', h: 40, bg: C.trackBg2, lc: C.labelGreen, sub: 'Conservation' },
+        { id: 'seq', label: 'Reference Seq', h: 20, bg: '#f0f0f0', lc: C.labelCol, sub: 'hg38 bases' },
+        { id: 'legend', label: '', h: 28, bg: '#fafafa' },
+      ];
+
+      function computeHeight(W) {
+        return TRACKS.reduce((sum, t) => sum + t.h, 0);
       }
 
-      function trackLabel(track, ty) {
-        // label box
-        ctx.fillStyle = '#fafafa';
-        ctx.fillRect(0, ty, LBL - 1, track.h);
+      // Label column width — generous so labels are never clipped
+      const LBL = 138;
 
-        // main label
-        ctx.fillStyle = track.lc || '#333';
-        ctx.font = `500 9px IBM Plex Mono, monospace`;
-        // word-wrap if label is long
-        const words = (track.label || '').split(' ');
-        let line = '', lineY = ty + 12, lineH = 10;
-        words.forEach((w, i) => {
-          const test = line + (line ? ' ' : '') + w;
-          if (ctx.measureText(test).width > LBL - 8 && line) {
-            ctx.fillText(line, 4, lineY);
-            line = w; lineY += lineH;
-          } else { line = test; }
-          if (i === words.length - 1) ctx.fillText(line, 4, lineY);
-        });
+      function draw(W, H) {
+        ctx.clearRect(0, 0, W, H);
 
-        // sublabel
-        if (track.sub) {
-          ctx.fillStyle = '#aaa';
-          ctx.font = `300 7.5px IBM Plex Mono, monospace`;
-          ctx.fillText(track.sub, 4, ty + track.h - 5);
+        const DX = LBL;
+        const DW = W - LBL - 8;
+        let y = 0;
+
+        // ── helpers ────────────────────────────────────────
+
+        function bg(ty, th, col) {
+          ctx.fillStyle = col;
+          ctx.fillRect(0, ty, W, th);
         }
 
-        // thin right border of label column
-        ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(LBL - 1, ty); ctx.lineTo(LBL - 1, ty + track.h); ctx.stroke();
-      }
-
-      // ── RULER ──────────────────────────────────────────
-      {
-        const tr = TRACKS[0];
-        bg(y, tr.h, tr.bg);
-
-        // chromosome
-        ctx.fillStyle = '#fff';
-        ctx.fillRect(0, y, LBL - 1, tr.h);
-        ctx.fillStyle = '#000';
-        ctx.font = 'bold 10px IBM Plex Mono, monospace';
-        ctx.fillText('chr21', 6, y + tr.h / 2 + 4);
-
-        // position ticks — 7 evenly spaced
-        const COORDS = [
-          '31,658,000', '31,658,500', '31,659,000', '31,659,500',
-          '31,660,000', '31,660,500', '31,661,000'
-        ];
-        const step = DW / (COORDS.length - 1);
-
-        ctx.strokeStyle = '#bbb'; ctx.lineWidth = 0.8;
-        COORDS.forEach((lbl, i) => {
-          const tx = DX + i * step;
-          ctx.beginPath(); ctx.moveTo(tx, y + tr.h - 8); ctx.lineTo(tx, y + tr.h); ctx.stroke();
-          ctx.fillStyle = C.ruleText;
-          ctx.font = '7.5px IBM Plex Mono, monospace';
-          const tw = ctx.measureText(lbl).width;
-          ctx.fillText(lbl, tx - tw / 2, y + tr.h - 10);
-        });
-
-        // hairline top
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(0, y + tr.h); ctx.lineTo(W, y + tr.h); ctx.stroke();
-
-        // scale bar — top right corner
-        const scaleW = step; // one tick = 500 bp
-        const sx = W - 10 - scaleW;
-        const sy = y + 10;
-        ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2;
-        ctx.beginPath(); ctx.moveTo(sx, sy + 5); ctx.lineTo(sx + scaleW, sy + 5); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(sx, sy + 2); ctx.lineTo(sx, sy + 8); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(sx + scaleW, sy + 2); ctx.lineTo(sx + scaleW, sy + 8); ctx.stroke();
-        ctx.fillStyle = '#000';
-        ctx.font = '7.5px IBM Plex Mono, monospace';
-        ctx.fillText('500 bp', sx + scaleW / 2 - 14, sy + 18);
-
-        y += tr.h;
-      }
-
-      // ── GENE MODEL (GENCODE V39 / SOD1) ────────────────
-      {
-        const tr = TRACKS[1];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const mid = y + tr.h / 2;
-        const gx = DX + DW * 0.01;
-        const gw = DW * 0.80;
-
-        // backbone — thin intron line
-        ctx.fillStyle = C.geneLight;
-        ctx.fillRect(gx, mid - 1.5, gw, 3);
-
-        // exon blocks (scaled to 3kb window)
-        const exons = [
-          [0.00, 0.065], [0.115, 0.075], [0.230, 0.085],
-          [0.360, 0.065], [0.480, 0.095], [0.615, 0.080], [0.745, 0.055]
-        ];
-        exons.forEach(([s, w]) => {
-          ctx.fillStyle = C.exon;
-          ctx.fillRect(gx + gw * s, mid - 7, gw * w, 14);
-        });
-
-        // intron chevrons
-        ctx.strokeStyle = C.arrow; ctx.lineWidth = 1;
-        for (let xi = gx + 8; xi < gx + gw; xi += 14) {
-          // only in intron gaps (skip exon regions)
-          const rel = (xi - gx) / gw;
-          const inExon = exons.some(([s, w]) => rel >= s && rel <= s + w + 0.01);
-          if (!inExon) {
-            ctx.beginPath();
-            ctx.moveTo(xi, mid - 3);
-            ctx.lineTo(xi + 5, mid);
-            ctx.lineTo(xi, mid + 3);
-            ctx.stroke();
-          }
+        function hline(ty, col, lw) {
+          ctx.strokeStyle = col || C.rowLine;
+          ctx.lineWidth = lw || 0.5;
+          ctx.beginPath(); ctx.moveTo(DX, ty); ctx.lineTo(W, ty); ctx.stroke();
         }
 
-        // 3' UTR fade
-        ctx.fillStyle = C.geneLight;
-        ctx.fillRect(gx + gw * 0.80, mid - 4, gw * 0.20, 8);
+        function trackLabel(track, ty) {
+          // label box
+          ctx.fillStyle = '#fafafa';
+          ctx.fillRect(0, ty, LBL - 1, track.h);
 
-        // gene name above
-        ctx.fillStyle = C.exon;
-        ctx.font = 'bold 9px IBM Plex Mono, monospace';
-        ctx.fillText('SOD1  ENST00000270142.11  →', gx + 2, y + 9);
-
-        y += tr.h;
-      }
-
-      // ── REFSEQ CURATED ─────────────────────────────────
-      {
-        const tr = TRACKS[2];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const mid = y + tr.h / 2;
-
-        // two RefSeq transcript bars
-        const transcripts = [
-          { x: 0.02, w: 0.55, exons: [[0.00, 0.07], [0.15, 0.07], [0.29, 0.08], [0.42, 0.06], [0.49, 0.06]] },
-          { x: 0.10, w: 0.45, exons: [[0.00, 0.05], [0.12, 0.06], [0.25, 0.07], [0.38, 0.07]] },
-        ];
-
-        transcripts.forEach((tx2, ti) => {
-          const gx2 = DX + DW * tx2.x;
-          const gw2 = DW * tx2.w;
-          const yoff = ti === 0 ? -4 : 4;
-          ctx.fillStyle = '#90caf9';
-          ctx.fillRect(gx2, mid + yoff - 1, gw2, 2);
-          tx2.exons.forEach(([s, w]) => {
-            ctx.fillStyle = '#1565c0';
-            ctx.fillRect(gx2 + gw2 * s, mid + yoff - 4, gw2 * w, 8);
+          // main label
+          ctx.fillStyle = track.lc || '#333';
+          ctx.font = `500 9px IBM Plex Mono, monospace`;
+          // word-wrap if label is long
+          const words = (track.label || '').split(' ');
+          let line = '', lineY = ty + 12, lineH = 10;
+          words.forEach((w, i) => {
+            const test = line + (line ? ' ' : '') + w;
+            if (ctx.measureText(test).width > LBL - 8 && line) {
+              ctx.fillText(line, 4, lineY);
+              line = w; lineY += lineH;
+            } else { line = test; }
+            if (i === words.length - 1) ctx.fillText(line, 4, lineY);
           });
-        });
 
-        y += tr.h;
-      }
+          // sublabel
+          if (track.sub) {
+            ctx.fillStyle = '#aaa';
+            ctx.font = `300 7.5px IBM Plex Mono, monospace`;
+            ctx.fillText(track.sub, 4, ty + track.h - 5);
+          }
 
-      // ── OMIM ALLELES ───────────────────────────────────
-      {
-        const tr = TRACKS[2 + 1]; // index 3
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const omimPos = [0.08, 0.19, 0.21, 0.38, 0.55, 0.72, 0.83];
-        omimPos.forEach(p => {
-          const vx = DX + DW * p;
-          ctx.fillStyle = C.benign;
-          ctx.fillRect(vx - 1, y + 4, 2.5, tr.h - 8);
-          // tick mark top
-          ctx.beginPath();
-          ctx.arc(vx, y + 5, 2.5, 0, Math.PI * 2);
-          ctx.fill();
-        });
-
-        y += tr.h;
-      }
-
-      // ── READ COVERAGE ───────────────────────────────────
-      {
-        const tr = TRACKS[4];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const N = 300;
-        const bot = y + tr.h - 7;
-        const drawH = tr.h - 14;
-
-        // y-axis grid lines + labels
-        [0, 0.25, 0.5, 0.75, 1.0].forEach(frac => {
-          const ly = bot - frac * drawH;
-          ctx.strokeStyle = '#ebebeb'; ctx.lineWidth = 0.5;
-          ctx.beginPath(); ctx.moveTo(DX, ly); ctx.lineTo(W, ly); ctx.stroke();
-          ctx.fillStyle = '#bbb';
-          ctx.font = '7px IBM Plex Mono, monospace';
-          ctx.fillText(Math.round(frac * 100), DX - 26, ly + 3);
-        });
-
-        // Y-axis label
-        ctx.save();
-        ctx.translate(DX - 32, y + tr.h / 2);
-        ctx.rotate(-Math.PI / 2);
-        ctx.fillStyle = '#bbb'; ctx.font = '6.5px IBM Plex Mono, monospace';
-        ctx.fillText('depth (×)', -18, 0);
-        ctx.restore();
-
-        // build coverage profile
-        const prof = [];
-        for (let i = 0; i < N; i++) {
-          const t2 = i / N;
-          let v = 0.42 + 0.08 * Math.sin(t2 * Math.PI * 4 + 0.5);
-          if (t2 > 0.10 && t2 < 0.19) v += 0.28 * Math.sin((t2 - 0.10) / 0.09 * Math.PI);
-          if (t2 > 0.22 && t2 < 0.32) v += 0.22 * Math.sin((t2 - 0.22) / 0.10 * Math.PI);
-          if (t2 > 0.35 && t2 < 0.47) v += 0.32 * Math.sin((t2 - 0.35) / 0.12 * Math.PI);
-          if (t2 > 0.48 && t2 < 0.58) v += 0.20 * Math.sin((t2 - 0.48) / 0.10 * Math.PI);
-          if (t2 > 0.61 && t2 < 0.73) v += 0.36 * Math.sin((t2 - 0.61) / 0.12 * Math.PI);
-          v += 0.025 * Math.sin(t2 * 180);
-          prof.push(Math.max(0.04, Math.min(0.98, v)));
+          // thin right border of label column
+          ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(LBL - 1, ty); ctx.lineTo(LBL - 1, ty + track.h); ctx.stroke();
         }
 
-        // filled area
-        ctx.fillStyle = C.covFill;
-        ctx.beginPath();
-        ctx.moveTo(DX, bot);
-        prof.forEach((v, i) => ctx.lineTo(DX + (i / N) * DW, bot - v * drawH));
-        ctx.lineTo(DX + DW, bot);
-        ctx.closePath();
-        ctx.fill();
+        // ── RULER ──────────────────────────────────────────
+        {
+          const tr = TRACKS[0];
+          bg(y, tr.h, tr.bg);
 
-        // top stroke
-        ctx.strokeStyle = C.covLine; ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        prof.forEach((v, i) => {
-          const px = DX + (i / N) * DW, py = bot - v * drawH;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        });
-        ctx.stroke();
-
-        y += tr.h;
-      }
-
-      // ── CLINVAR VARIANTS ───────────────────────────────
-      {
-        const tr = TRACKS[5];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const variants = [
-          { pos: 0.08, type: 'B', rsid: 'rs1267', label: 'p.Ala4Val', sig: 'Benign' },
-          { pos: 0.22, type: 'P', rsid: 'rs11556620', label: 'p.Asp90Ala', sig: 'Pathogenic' },
-          { pos: 0.38, type: 'LP', rsid: 'rs3844942', label: 'p.Gly93Ala', sig: 'Likely Path.' },
-          { pos: 0.52, type: 'VUS', rsid: 'rs2234694', label: 'p.Ile113Thr', 'sig': 'VUS' },
-          { pos: 0.67, type: 'P', rsid: 'rs80265967', label: 'p.Leu144Phe', 'sig': 'Pathogenic' },
-          { pos: 0.82, type: 'B', rsid: 'rs2070424', label: 'p.Ala145Gly', 'sig': 'Benign' },
-        ];
-
-        const vCol = { B: '#2e7d32', LP: '#f57f17', P: '#c62828', VUS: '#e65100' };
-        const vBg = { B: 'rgba(46,125,50,0.1)', LP: 'rgba(245,127,23,0.1)', P: 'rgba(198,40,40,0.1)', VUS: 'rgba(230,81,0,0.1)' };
-
-        variants.forEach(v => {
-          const vx = DX + DW * v.pos;
-          const col = vCol[v.type];
-
-          // vertical stem
-          ctx.strokeStyle = col; ctx.lineWidth = 1.5;
-          ctx.beginPath(); ctx.moveTo(vx, y + 3); ctx.lineTo(vx, y + 28); ctx.stroke();
-
-          // flag box
-          const fw = 58, fh = 16;
-          const fx = Math.min(vx - 2, DX + DW - fw - 4);
-          ctx.fillStyle = vBg[v.type];
-          ctx.fillRect(fx, y + 3, fw, fh);
-          ctx.strokeStyle = col; ctx.lineWidth = 0.8;
-          ctx.strokeRect(fx, y + 3, fw, fh);
-
-          // variant type badge
-          ctx.fillStyle = col;
-          ctx.fillRect(fx, y + 3, 20, fh);
+          // chromosome
           ctx.fillStyle = '#fff';
-          ctx.font = 'bold 7px IBM Plex Mono, monospace';
-          ctx.fillText(v.type, fx + 3, y + 13);
+          ctx.fillRect(0, y, LBL - 1, tr.h);
+          ctx.fillStyle = '#000';
+          ctx.font = 'bold 10px IBM Plex Mono, monospace';
+          ctx.fillText('chr21', 6, y + tr.h / 2 + 4);
 
-          // rsid + AA change
-          ctx.fillStyle = '#333';
-          ctx.font = '6.5px IBM Plex Mono, monospace';
-          ctx.fillText(v.label, fx + 23, y + 10);
-          ctx.fillStyle = '#888';
-          ctx.fillText(v.rsid, fx + 23, y + 18);
+          // position ticks — 7 evenly spaced
+          const COORDS = [
+            '31,658,000', '31,658,500', '31,659,000', '31,659,500',
+            '31,660,000', '31,660,500', '31,661,000'
+          ];
+          const step = DW / (COORDS.length - 1);
 
-          // diamond at base
-          ctx.fillStyle = col;
+          ctx.strokeStyle = '#bbb'; ctx.lineWidth = 0.8;
+          COORDS.forEach((lbl, i) => {
+            const tx = DX + i * step;
+            ctx.beginPath(); ctx.moveTo(tx, y + tr.h - 8); ctx.lineTo(tx, y + tr.h); ctx.stroke();
+            ctx.fillStyle = C.ruleText;
+            ctx.font = '7.5px IBM Plex Mono, monospace';
+            const tw = ctx.measureText(lbl).width;
+            ctx.fillText(lbl, tx - tw / 2, y + tr.h - 10);
+          });
+
+          // hairline top
+          ctx.strokeStyle = '#000'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(0, y + tr.h); ctx.lineTo(W, y + tr.h); ctx.stroke();
+
+          // scale bar — top right corner
+          const scaleW = step; // one tick = 500 bp
+          const sx = W - 10 - scaleW;
+          const sy = y + 10;
+          ctx.strokeStyle = '#000'; ctx.lineWidth = 1.2;
+          ctx.beginPath(); ctx.moveTo(sx, sy + 5); ctx.lineTo(sx + scaleW, sy + 5); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(sx, sy + 2); ctx.lineTo(sx, sy + 8); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(sx + scaleW, sy + 2); ctx.lineTo(sx + scaleW, sy + 8); ctx.stroke();
+          ctx.fillStyle = '#000';
+          ctx.font = '7.5px IBM Plex Mono, monospace';
+          ctx.fillText('500 bp', sx + scaleW / 2 - 14, sy + 18);
+
+          y += tr.h;
+        }
+
+        // ── GENE MODEL (GENCODE V39 / SOD1) ────────────────
+        {
+          const tr = TRACKS[1];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const mid = y + tr.h / 2;
+          const gx = DX + DW * 0.01;
+          const gw = DW * 0.80;
+
+          // backbone — thin intron line
+          ctx.fillStyle = C.geneLight;
+          ctx.fillRect(gx, mid - 1.5, gw, 3);
+
+          // exon blocks (scaled to 3kb window)
+          const exons = [
+            [0.00, 0.065], [0.115, 0.075], [0.230, 0.085],
+            [0.360, 0.065], [0.480, 0.095], [0.615, 0.080], [0.745, 0.055]
+          ];
+          exons.forEach(([s, w]) => {
+            ctx.fillStyle = C.exon;
+            ctx.fillRect(gx + gw * s, mid - 7, gw * w, 14);
+          });
+
+          // intron chevrons
+          ctx.strokeStyle = C.arrow; ctx.lineWidth = 1;
+          for (let xi = gx + 8; xi < gx + gw; xi += 14) {
+            // only in intron gaps (skip exon regions)
+            const rel = (xi - gx) / gw;
+            const inExon = exons.some(([s, w]) => rel >= s && rel <= s + w + 0.01);
+            if (!inExon) {
+              ctx.beginPath();
+              ctx.moveTo(xi, mid - 3);
+              ctx.lineTo(xi + 5, mid);
+              ctx.lineTo(xi, mid + 3);
+              ctx.stroke();
+            }
+          }
+
+          // 3' UTR fade
+          ctx.fillStyle = C.geneLight;
+          ctx.fillRect(gx + gw * 0.80, mid - 4, gw * 0.20, 8);
+
+          // gene name above
+          ctx.fillStyle = C.exon;
+          ctx.font = 'bold 9px IBM Plex Mono, monospace';
+          ctx.fillText('SOD1  ENST00000270142.11  →', gx + 2, y + 9);
+
+          y += tr.h;
+        }
+
+        // ── REFSEQ CURATED ─────────────────────────────────
+        {
+          const tr = TRACKS[2];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const mid = y + tr.h / 2;
+
+          // two RefSeq transcript bars
+          const transcripts = [
+            { x: 0.02, w: 0.55, exons: [[0.00, 0.07], [0.15, 0.07], [0.29, 0.08], [0.42, 0.06], [0.49, 0.06]] },
+            { x: 0.10, w: 0.45, exons: [[0.00, 0.05], [0.12, 0.06], [0.25, 0.07], [0.38, 0.07]] },
+          ];
+
+          transcripts.forEach((tx2, ti) => {
+            const gx2 = DX + DW * tx2.x;
+            const gw2 = DW * tx2.w;
+            const yoff = ti === 0 ? -4 : 4;
+            ctx.fillStyle = '#90caf9';
+            ctx.fillRect(gx2, mid + yoff - 1, gw2, 2);
+            tx2.exons.forEach(([s, w]) => {
+              ctx.fillStyle = '#1565c0';
+              ctx.fillRect(gx2 + gw2 * s, mid + yoff - 4, gw2 * w, 8);
+            });
+          });
+
+          y += tr.h;
+        }
+
+        // ── OMIM ALLELES ───────────────────────────────────
+        {
+          const tr = TRACKS[2 + 1]; // index 3
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const omimPos = [0.08, 0.19, 0.21, 0.38, 0.55, 0.72, 0.83];
+          omimPos.forEach(p => {
+            const vx = DX + DW * p;
+            ctx.fillStyle = C.benign;
+            ctx.fillRect(vx - 1, y + 4, 2.5, tr.h - 8);
+            // tick mark top
+            ctx.beginPath();
+            ctx.arc(vx, y + 5, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+          });
+
+          y += tr.h;
+        }
+
+        // ── READ COVERAGE ───────────────────────────────────
+        {
+          const tr = TRACKS[4];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const N = 300;
+          const bot = y + tr.h - 7;
+          const drawH = tr.h - 14;
+
+          // y-axis grid lines + labels
+          [0, 0.25, 0.5, 0.75, 1.0].forEach(frac => {
+            const ly = bot - frac * drawH;
+            ctx.strokeStyle = '#ebebeb'; ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(DX, ly); ctx.lineTo(W, ly); ctx.stroke();
+            ctx.fillStyle = '#bbb';
+            ctx.font = '7px IBM Plex Mono, monospace';
+            ctx.fillText(Math.round(frac * 100), DX - 26, ly + 3);
+          });
+
+          // Y-axis label
+          ctx.save();
+          ctx.translate(DX - 32, y + tr.h / 2);
+          ctx.rotate(-Math.PI / 2);
+          ctx.fillStyle = '#bbb'; ctx.font = '6.5px IBM Plex Mono, monospace';
+          ctx.fillText('depth (×)', -18, 0);
+          ctx.restore();
+
+          // build coverage profile
+          const prof = [];
+          for (let i = 0; i < N; i++) {
+            const t2 = i / N;
+            let v = 0.42 + 0.08 * Math.sin(t2 * Math.PI * 4 + 0.5);
+            if (t2 > 0.10 && t2 < 0.19) v += 0.28 * Math.sin((t2 - 0.10) / 0.09 * Math.PI);
+            if (t2 > 0.22 && t2 < 0.32) v += 0.22 * Math.sin((t2 - 0.22) / 0.10 * Math.PI);
+            if (t2 > 0.35 && t2 < 0.47) v += 0.32 * Math.sin((t2 - 0.35) / 0.12 * Math.PI);
+            if (t2 > 0.48 && t2 < 0.58) v += 0.20 * Math.sin((t2 - 0.48) / 0.10 * Math.PI);
+            if (t2 > 0.61 && t2 < 0.73) v += 0.36 * Math.sin((t2 - 0.61) / 0.12 * Math.PI);
+            v += 0.025 * Math.sin(t2 * 180);
+            prof.push(Math.max(0.04, Math.min(0.98, v)));
+          }
+
+          // filled area
+          ctx.fillStyle = C.covFill;
           ctx.beginPath();
-          ctx.moveTo(vx, y + 28);
-          ctx.lineTo(vx + 4, y + 34);
-          ctx.lineTo(vx, y + 40);
-          ctx.lineTo(vx - 4, y + 34);
+          ctx.moveTo(DX, bot);
+          prof.forEach((v, i) => ctx.lineTo(DX + (i / N) * DW, bot - v * drawH));
+          ctx.lineTo(DX + DW, bot);
           ctx.closePath();
           ctx.fill();
-        });
 
-        // legend row
-        const legY = y + tr.h - 10;
-        const legItems = [
-          { c: C.benign, t: 'Benign (B)' },
-          { c: '#f57f17', t: 'Likely Pathogenic (LP)' },
-          { c: C.pathogenic, t: 'Pathogenic (P)' },
-          { c: C.vus, t: 'Uncertain (VUS)' },
-        ];
-        let lx = DX + 6;
-        ctx.font = '7px IBM Plex Mono, monospace';
-        legItems.forEach(l => {
-          ctx.fillStyle = l.c; ctx.fillRect(lx, legY - 1, 8, 8);
-          ctx.fillStyle = '#666'; ctx.fillText(l.t, lx + 11, legY + 7);
-          lx += ctx.measureText(l.t).width + 26;
-        });
-
-        y += tr.h;
-      }
-
-      // ── H3K27Ac ChIP-seq ───────────────────────────────
-      {
-        const tr = TRACKS[6];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const N = 300;
-        const bot = y + tr.h - 7;
-        const dh = tr.h - 14;
-
-        // grid
-        [0, 0.5, 1].forEach(f => {
-          const ly = bot - f * dh;
-          ctx.strokeStyle = '#eaecf5'; ctx.lineWidth = 0.5;
-          ctx.beginPath(); ctx.moveTo(DX, ly); ctx.lineTo(W, ly); ctx.stroke();
-        });
-
-        const sig = [];
-        for (let i = 0; i < N; i++) {
-          const t2 = i / N;
-          let v = 0.06 + 0.03 * Math.sin(t2 * Math.PI * 6);
-          if (t2 > 0.28 && t2 < 0.52) v += 0.70 * Math.sin((t2 - 0.28) / 0.24 * Math.PI);
-          if (t2 > 0.63 && t2 < 0.78) v += 0.38 * Math.sin((t2 - 0.63) / 0.15 * Math.PI);
-          sig.push(Math.max(0, Math.min(1, v)));
-        }
-
-        ctx.fillStyle = C.chipFill;
-        ctx.beginPath();
-        ctx.moveTo(DX, bot);
-        sig.forEach((v, i) => ctx.lineTo(DX + (i / N) * DW, bot - v * dh));
-        ctx.lineTo(DX + DW, bot);
-        ctx.closePath(); ctx.fill();
-
-        ctx.strokeStyle = C.chipLine; ctx.lineWidth = 1.2;
-        ctx.beginPath();
-        sig.forEach((v, i) => {
-          const px = DX + (i / N) * DW, py = bot - v * dh;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        });
-        ctx.stroke();
-
-        // peak annotations
-        [{ pos: 0.38, label: 'Peak 1\n(enhancer)' }, { pos: 0.70, label: 'Peak 2' }].forEach(pk => {
-          const px = DX + DW * pk.pos;
-          ctx.strokeStyle = 'rgba(63,81,181,0.4)'; ctx.lineWidth = 0.8;
-          ctx.setLineDash([3, 2]);
-          ctx.beginPath(); ctx.moveTo(px, y + 4); ctx.lineTo(px, bot); ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = C.chipLine;
-          ctx.font = '6.5px IBM Plex Mono, monospace';
-          ctx.fillText(pk.label.split('\n')[0], px + 3, y + 12);
-          if (pk.label.includes('\n')) ctx.fillText(pk.label.split('\n')[1], px + 3, y + 21);
-        });
-
-        y += tr.h;
-      }
-
-      // ── CONSERVATION PhyloP 100way ─────────────────────
-      {
-        const tr = TRACKS[7];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const mid2 = y + tr.h * 0.62;
-        const dh = tr.h * 0.55;
-
-        // baseline
-        ctx.strokeStyle = '#ccc'; ctx.lineWidth = 0.5;
-        ctx.beginPath(); ctx.moveTo(DX, mid2); ctx.lineTo(W, mid2); ctx.stroke();
-
-        // axis labels
-        ctx.fillStyle = '#bbb'; ctx.font = '6.5px IBM Plex Mono, monospace';
-        ctx.fillText('+', DX - 12, mid2 - dh * 0.7);
-        ctx.fillText('0', DX - 12, mid2 + 4);
-        ctx.fillText('−', DX - 12, mid2 + dh * 0.4 + 4);
-
-        const N = 300;
-        // positive (conserved) — green bars
-        ctx.fillStyle = C.consFill;
-        ctx.beginPath();
-        ctx.moveTo(DX, mid2);
-        for (let i = 0; i < N; i++) {
-          const t2 = i / N;
-          let v = 0.04 * Math.sin(t2 * 300);
-          if (t2 > 0.04 && t2 < 0.20) v += 0.80 * Math.sin((t2 - 0.04) / 0.16 * Math.PI);
-          if (t2 > 0.32 && t2 < 0.49) v += 0.65 * Math.sin((t2 - 0.32) / 0.17 * Math.PI);
-          if (t2 > 0.58 && t2 < 0.76) v += 0.90 * Math.sin((t2 - 0.58) / 0.18 * Math.PI);
-          v = Math.max(-0.25, Math.min(1, v));
-          ctx.lineTo(DX + (i / N) * DW, mid2 - v * dh);
-        }
-        ctx.lineTo(DX + DW, mid2);
-        ctx.closePath(); ctx.fill();
-
-        ctx.strokeStyle = C.consLine; ctx.lineWidth = 1;
-        ctx.beginPath();
-        for (let i = 0; i < N; i++) {
-          const t2 = i / N;
-          let v = 0.04 * Math.sin(t2 * 300);
-          if (t2 > 0.04 && t2 < 0.20) v += 0.80 * Math.sin((t2 - 0.04) / 0.16 * Math.PI);
-          if (t2 > 0.32 && t2 < 0.49) v += 0.65 * Math.sin((t2 - 0.32) / 0.17 * Math.PI);
-          if (t2 > 0.58 && t2 < 0.76) v += 0.90 * Math.sin((t2 - 0.58) / 0.18 * Math.PI);
-          v = Math.max(-0.25, Math.min(1, v));
-          const px = DX + (i / N) * DW, py = mid2 - v * dh;
-          i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-
-        y += tr.h;
-      }
-
-      // ── REFERENCE SEQUENCE ─────────────────────────────
-      {
-        const tr = TRACKS[8];
-        bg(y, tr.h, tr.bg);
-        trackLabel(tr, y);
-        hline(y, C.rowLine);
-
-        const seq = 'ATGCTAGCATCGATCGATGCATCGATGCTAGCATCGATCGATGCTAGCATCGATCGATGCTAGCATCGATGCATCGATCGATGCATCGATCGATGC';
-        const bw = DW / seq.length;
-
-        if (bw >= 8) {
-          seq.split('').forEach((b, i) => {
-            ctx.fillStyle = BASE_C[b] || '#000';
-            ctx.font = `bold ${Math.min(10, Math.floor(bw) - 1)}px IBM Plex Mono, monospace`;
-            ctx.fillText(b, DX + i * bw + bw * 0.1, y + tr.h - 5);
+          // top stroke
+          ctx.strokeStyle = C.covLine; ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          prof.forEach((v, i) => {
+            const px = DX + (i / N) * DW, py = bot - v * drawH;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
           });
-        } else {
-          seq.split('').forEach((b, i) => {
-            ctx.fillStyle = BASE_C[b] || '#888';
-            ctx.globalAlpha = 0.75;
-            ctx.fillRect(DX + i * bw, y + 3, Math.max(0.8, bw - 0.3), tr.h - 6);
-          });
-          ctx.globalAlpha = 1;
+          ctx.stroke();
+
+          y += tr.h;
         }
 
-        y += tr.h;
+        // ── CLINVAR VARIANTS ───────────────────────────────
+        {
+          const tr = TRACKS[5];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const variants = [
+            { pos: 0.08, type: 'B', rsid: 'rs1267', label: 'p.Ala4Val', sig: 'Benign' },
+            { pos: 0.22, type: 'P', rsid: 'rs11556620', label: 'p.Asp90Ala', sig: 'Pathogenic' },
+            { pos: 0.38, type: 'LP', rsid: 'rs3844942', label: 'p.Gly93Ala', sig: 'Likely Path.' },
+            { pos: 0.52, type: 'VUS', rsid: 'rs2234694', label: 'p.Ile113Thr', 'sig': 'VUS' },
+            { pos: 0.67, type: 'P', rsid: 'rs80265967', label: 'p.Leu144Phe', 'sig': 'Pathogenic' },
+            { pos: 0.82, type: 'B', rsid: 'rs2070424', label: 'p.Ala145Gly', 'sig': 'Benign' },
+          ];
+
+          const vCol = { B: '#2e7d32', LP: '#f57f17', P: '#c62828', VUS: '#e65100' };
+          const vBg = { B: 'rgba(46,125,50,0.1)', LP: 'rgba(245,127,23,0.1)', P: 'rgba(198,40,40,0.1)', VUS: 'rgba(230,81,0,0.1)' };
+
+          variants.forEach(v => {
+            const vx = DX + DW * v.pos;
+            const col = vCol[v.type];
+
+            // vertical stem
+            ctx.strokeStyle = col; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.moveTo(vx, y + 3); ctx.lineTo(vx, y + 28); ctx.stroke();
+
+            // flag box
+            const fw = 58, fh = 16;
+            const fx = Math.min(vx - 2, DX + DW - fw - 4);
+            ctx.fillStyle = vBg[v.type];
+            ctx.fillRect(fx, y + 3, fw, fh);
+            ctx.strokeStyle = col; ctx.lineWidth = 0.8;
+            ctx.strokeRect(fx, y + 3, fw, fh);
+
+            // variant type badge
+            ctx.fillStyle = col;
+            ctx.fillRect(fx, y + 3, 20, fh);
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 7px IBM Plex Mono, monospace';
+            ctx.fillText(v.type, fx + 3, y + 13);
+
+            // rsid + AA change
+            ctx.fillStyle = '#333';
+            ctx.font = '6.5px IBM Plex Mono, monospace';
+            ctx.fillText(v.label, fx + 23, y + 10);
+            ctx.fillStyle = '#888';
+            ctx.fillText(v.rsid, fx + 23, y + 18);
+
+            // diamond at base
+            ctx.fillStyle = col;
+            ctx.beginPath();
+            ctx.moveTo(vx, y + 28);
+            ctx.lineTo(vx + 4, y + 34);
+            ctx.lineTo(vx, y + 40);
+            ctx.lineTo(vx - 4, y + 34);
+            ctx.closePath();
+            ctx.fill();
+          });
+
+          // legend row
+          const legY = y + tr.h - 10;
+          const legItems = [
+            { c: C.benign, t: 'Benign (B)' },
+            { c: '#f57f17', t: 'Likely Pathogenic (LP)' },
+            { c: C.pathogenic, t: 'Pathogenic (P)' },
+            { c: C.vus, t: 'Uncertain (VUS)' },
+          ];
+          let lx = DX + 6;
+          ctx.font = '7px IBM Plex Mono, monospace';
+          legItems.forEach(l => {
+            ctx.fillStyle = l.c; ctx.fillRect(lx, legY - 1, 8, 8);
+            ctx.fillStyle = '#666'; ctx.fillText(l.t, lx + 11, legY + 7);
+            lx += ctx.measureText(l.t).width + 26;
+          });
+
+          y += tr.h;
+        }
+
+        // ── H3K27Ac ChIP-seq ───────────────────────────────
+        {
+          const tr = TRACKS[6];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const N = 300;
+          const bot = y + tr.h - 7;
+          const dh = tr.h - 14;
+
+          // grid
+          [0, 0.5, 1].forEach(f => {
+            const ly = bot - f * dh;
+            ctx.strokeStyle = '#eaecf5'; ctx.lineWidth = 0.5;
+            ctx.beginPath(); ctx.moveTo(DX, ly); ctx.lineTo(W, ly); ctx.stroke();
+          });
+
+          const sig = [];
+          for (let i = 0; i < N; i++) {
+            const t2 = i / N;
+            let v = 0.06 + 0.03 * Math.sin(t2 * Math.PI * 6);
+            if (t2 > 0.28 && t2 < 0.52) v += 0.70 * Math.sin((t2 - 0.28) / 0.24 * Math.PI);
+            if (t2 > 0.63 && t2 < 0.78) v += 0.38 * Math.sin((t2 - 0.63) / 0.15 * Math.PI);
+            sig.push(Math.max(0, Math.min(1, v)));
+          }
+
+          ctx.fillStyle = C.chipFill;
+          ctx.beginPath();
+          ctx.moveTo(DX, bot);
+          sig.forEach((v, i) => ctx.lineTo(DX + (i / N) * DW, bot - v * dh));
+          ctx.lineTo(DX + DW, bot);
+          ctx.closePath(); ctx.fill();
+
+          ctx.strokeStyle = C.chipLine; ctx.lineWidth = 1.2;
+          ctx.beginPath();
+          sig.forEach((v, i) => {
+            const px = DX + (i / N) * DW, py = bot - v * dh;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          });
+          ctx.stroke();
+
+          // peak annotations
+          [{ pos: 0.38, label: 'Peak 1\n(enhancer)' }, { pos: 0.70, label: 'Peak 2' }].forEach(pk => {
+            const px = DX + DW * pk.pos;
+            ctx.strokeStyle = 'rgba(63,81,181,0.4)'; ctx.lineWidth = 0.8;
+            ctx.setLineDash([3, 2]);
+            ctx.beginPath(); ctx.moveTo(px, y + 4); ctx.lineTo(px, bot); ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.fillStyle = C.chipLine;
+            ctx.font = '6.5px IBM Plex Mono, monospace';
+            ctx.fillText(pk.label.split('\n')[0], px + 3, y + 12);
+            if (pk.label.includes('\n')) ctx.fillText(pk.label.split('\n')[1], px + 3, y + 21);
+          });
+
+          y += tr.h;
+        }
+
+        // ── CONSERVATION PhyloP 100way ─────────────────────
+        {
+          const tr = TRACKS[7];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const mid2 = y + tr.h * 0.62;
+          const dh = tr.h * 0.55;
+
+          // baseline
+          ctx.strokeStyle = '#ccc'; ctx.lineWidth = 0.5;
+          ctx.beginPath(); ctx.moveTo(DX, mid2); ctx.lineTo(W, mid2); ctx.stroke();
+
+          // axis labels
+          ctx.fillStyle = '#bbb'; ctx.font = '6.5px IBM Plex Mono, monospace';
+          ctx.fillText('+', DX - 12, mid2 - dh * 0.7);
+          ctx.fillText('0', DX - 12, mid2 + 4);
+          ctx.fillText('−', DX - 12, mid2 + dh * 0.4 + 4);
+
+          const N = 300;
+          // positive (conserved) — green bars
+          ctx.fillStyle = C.consFill;
+          ctx.beginPath();
+          ctx.moveTo(DX, mid2);
+          for (let i = 0; i < N; i++) {
+            const t2 = i / N;
+            let v = 0.04 * Math.sin(t2 * 300);
+            if (t2 > 0.04 && t2 < 0.20) v += 0.80 * Math.sin((t2 - 0.04) / 0.16 * Math.PI);
+            if (t2 > 0.32 && t2 < 0.49) v += 0.65 * Math.sin((t2 - 0.32) / 0.17 * Math.PI);
+            if (t2 > 0.58 && t2 < 0.76) v += 0.90 * Math.sin((t2 - 0.58) / 0.18 * Math.PI);
+            v = Math.max(-0.25, Math.min(1, v));
+            ctx.lineTo(DX + (i / N) * DW, mid2 - v * dh);
+          }
+          ctx.lineTo(DX + DW, mid2);
+          ctx.closePath(); ctx.fill();
+
+          ctx.strokeStyle = C.consLine; ctx.lineWidth = 1;
+          ctx.beginPath();
+          for (let i = 0; i < N; i++) {
+            const t2 = i / N;
+            let v = 0.04 * Math.sin(t2 * 300);
+            if (t2 > 0.04 && t2 < 0.20) v += 0.80 * Math.sin((t2 - 0.04) / 0.16 * Math.PI);
+            if (t2 > 0.32 && t2 < 0.49) v += 0.65 * Math.sin((t2 - 0.32) / 0.17 * Math.PI);
+            if (t2 > 0.58 && t2 < 0.76) v += 0.90 * Math.sin((t2 - 0.58) / 0.18 * Math.PI);
+            v = Math.max(-0.25, Math.min(1, v));
+            const px = DX + (i / N) * DW, py = mid2 - v * dh;
+            i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+
+          y += tr.h;
+        }
+
+        // ── REFERENCE SEQUENCE ─────────────────────────────
+        {
+          const tr = TRACKS[8];
+          bg(y, tr.h, tr.bg);
+          trackLabel(tr, y);
+          hline(y, C.rowLine);
+
+          const seq = 'ATGCTAGCATCGATCGATGCATCGATGCTAGCATCGATCGATGCTAGCATCGATCGATGCTAGCATCGATGCATCGATCGATGCATCGATCGATGC';
+          const bw = DW / seq.length;
+
+          if (bw >= 8) {
+            seq.split('').forEach((b, i) => {
+              ctx.fillStyle = BASE_C[b] || '#000';
+              ctx.font = `bold ${Math.min(10, Math.floor(bw) - 1)}px IBM Plex Mono, monospace`;
+              ctx.fillText(b, DX + i * bw + bw * 0.1, y + tr.h - 5);
+            });
+          } else {
+            seq.split('').forEach((b, i) => {
+              ctx.fillStyle = BASE_C[b] || '#888';
+              ctx.globalAlpha = 0.75;
+              ctx.fillRect(DX + i * bw, y + 3, Math.max(0.8, bw - 0.3), tr.h - 6);
+            });
+            ctx.globalAlpha = 1;
+          }
+
+          y += tr.h;
+        }
+
+        // ── LEGEND ROW ─────────────────────────────────────
+        {
+          const tr = TRACKS[9];
+          bg(y, tr.h, '#fafafa');
+
+          // Label column
+          ctx.fillStyle = '#fafafa'; ctx.fillRect(0, y, LBL - 1, tr.h);
+          ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(LBL - 1, y); ctx.lineTo(LBL - 1, y + tr.h); ctx.stroke();
+
+          ctx.font = '7px IBM Plex Mono, monospace';
+          const legItems = [
+            { c: C.seqA, t: 'A (Adenine)' },
+            { c: C.seqT, t: 'T (Thymine)' },
+            { c: C.seqC, t: 'C (Cytosine)' },
+            { c: C.seqG, t: 'G (Guanine)' },
+          ];
+          let lx = DX + 8;
+          legItems.forEach(l => {
+            ctx.fillStyle = l.c;
+            ctx.fillRect(lx, y + 9, 8, 9);
+            ctx.fillStyle = '#555';
+            ctx.fillText(l.t, lx + 12, y + 18);
+            lx += ctx.measureText(l.t).width + 26;
+          });
+
+          y += tr.h;
+        }
+
+        // ── Full-width label column divider ─────────────────
+        ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(LBL - 1, 0); ctx.lineTo(LBL - 1, H); ctx.stroke();
+
+        // ── Outer border ────────────────────────────────────
+        ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
       }
 
-      // ── LEGEND ROW ─────────────────────────────────────
-      {
-        const tr = TRACKS[9];
-        bg(y, tr.h, '#fafafa');
-
-        // Label column
-        ctx.fillStyle = '#fafafa'; ctx.fillRect(0, y, LBL - 1, tr.h);
-        ctx.strokeStyle = '#ddd'; ctx.lineWidth = 1;
-        ctx.beginPath(); ctx.moveTo(LBL - 1, y); ctx.lineTo(LBL - 1, y + tr.h); ctx.stroke();
-
-        ctx.font = '7px IBM Plex Mono, monospace';
-        const legItems = [
-          { c: C.seqA, t: 'A (Adenine)' },
-          { c: C.seqT, t: 'T (Thymine)' },
-          { c: C.seqC, t: 'C (Cytosine)' },
-          { c: C.seqG, t: 'G (Guanine)' },
-        ];
-        let lx = DX + 8;
-        legItems.forEach(l => {
-          ctx.fillStyle = l.c;
-          ctx.fillRect(lx, y + 9, 8, 9);
-          ctx.fillStyle = '#555';
-          ctx.fillText(l.t, lx + 12, y + 18);
-          lx += ctx.measureText(l.t).width + 26;
-        });
-
-        y += tr.h;
-      }
-
-      // ── Full-width label column divider ─────────────────
-      ctx.strokeStyle = '#bbb'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(LBL - 1, 0); ctx.lineTo(LBL - 1, H); ctx.stroke();
-
-      // ── Outer border ────────────────────────────────────
-      ctx.strokeStyle = '#000'; ctx.lineWidth = 1.5;
-      ctx.strokeRect(0.75, 0.75, W - 1.5, H - 1.5);
-    }
-
-    window.addEventListener('resize', resize);
-    resize();
-    }) ();
+      window.addEventListener('resize', resize);
+      resize();
+    })();
 
 
     /* ═══════════════════════════════════════════════════════════
