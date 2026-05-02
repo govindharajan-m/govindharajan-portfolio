@@ -307,45 +307,7 @@
       color: #333;
     }
 
-    /* ── GENOME BROWSER CONTAINER ─────────────────────── */
-    #genome-viz {
-      padding: 0;
-      flex-shrink: 0;
-    }
 
-    .browser-wrap {
-      border: 1.5px solid #000;
-      background: #ffffff;
-      overflow: hidden;
-    }
-
-    /* Header bar of browser */
-    .browser-header {
-      background: #1a1a2e;
-      color: #a0e0ff;
-      font-size: 9px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      padding: 7px 14px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-family: var(--mono);
-    }
-
-    .browser-header .loc {
-      color: #7fff9e;
-      font-weight: 600;
-    }
-
-    .browser-header .build {
-      color: #888;
-    }
-
-    canvas#genome-canvas {
-      display: block;
-      width: 100%;
-    }
 
     /* ── DNA FOOTER ───────────────────────────────────── */
     #dna-footer {
@@ -403,22 +365,50 @@
     <!-- ABOUT -->
     <section id="about">
       <div class="section-head">// about</div>
-      <p>I'm a biotechnology undergraduate with an interest in computational genomics and bioinformatics.</p>
+      <p>I'm a biotechnology undergraduate with an interest in computational genomics and bioinformatics.
+
+        I'm currently interested in building tools for single-cell rna sequence analysis, and how machine learning can
+        be used to analyze biological datasets. I'm also interested in how different models can be used to predict
+        protein
+        structures and interactions.
+
+        I also enjoy making websites and other software in my free time.
+      </p>
     </section>
 
     <div class="spacer"></div>
 
-    <!-- GENOME BROWSER -->
-    <section id="genome-viz">
-      <div class="section-head">// genome browser — chr21:31,658,000–31,661,000 (SOD1 locus)</div>
-      <div class="browser-wrap">
-        <div class="browser-header">
-          <span>UCSC Genome Browser &nbsp;·&nbsp; <span class="loc">chr21: 31,658,000 – 31,661,000</span> &nbsp;·&nbsp;
-            hg38</span>
-          <span class="build">GRCh38 / hg38 &nbsp;·&nbsp; 3 kb view</span>
-        </div>
-        <canvas id="genome-canvas"></canvas>
-      </div>
+    <!-- PROJECTS -->
+    <section id="projects">
+      <div class="section-head">// projects</div>
+      <div class="divider">─── Mini-Projects ───</div>
+      <ul class="proj-list">
+        <li class="proj-item">
+          <span class="proj-num">01</span>
+          <div>
+            <span class="proj-title">Unified SNP Database</span>
+            <p class="proj-desc">Critical genomic information is siloed across multiple public repositories. This
+              Database solves this by integrating: dbSNP (variant identity and location), Ensembl (gene mapping and
+              descriptions), ClinVar (clinical significance and disease associations), and gnomAD (population-specific
+              allele frequencies).</p>
+            <div class="proj-links-row">
+              <a href="https://github.com/govindharajan-m/Unified-SNP-Database" target="_blank">View Project</a>
+            </div>
+          </div>
+        </li>
+        <li class="proj-item">
+          <span class="proj-num">02</span>
+          <div>
+            <span class="proj-title">Genome Variant Interpretation Toolkit</span>
+            <p class="proj-desc">A bioinformatics web application built with Python (Flask) + HTML5/CSS/JS.</p>
+            <div class="proj-links-row">
+              <a href="https://genome-variant-interpretation-toolkit-1.onrender.com/" target="_blank">Visit Site</a>
+              <a href="https://github.com/govindharajan-m/Genome-Variant-Interpretation-Toolkit"
+                target="_blank">GitHub</a>
+            </div>
+          </div>
+        </li>
+      </ul>
     </section>
 
     <div class="spacer"></div>
@@ -547,9 +537,8 @@
     })();
 
 
-    /* ═══════════════════════════════════════════════════════════
-       2. GENOME BROWSER — clean, readable, research-grade
-    ═══════════════════════════════════════════════════════════ */
+
+
     (function () {
       const canvas = document.getElementById('genome-canvas');
       if (!canvas) return;
