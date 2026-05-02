@@ -29,8 +29,6 @@
 
     html {
       scroll-behavior: smooth;
-      height: 100vh;
-      overflow: hidden;
     }
 
     body {
@@ -42,8 +40,6 @@
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       position: relative;
-      height: 100vh;
-      overflow: hidden;
       margin: 0;
     }
 
@@ -74,10 +70,8 @@
       max-width: 900px;
       margin: 0 auto;
       padding: 0 28px;
-      height: 100vh;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
     }
 
     /* ── HEADER ───────────────────────────────────────── */
@@ -376,6 +370,13 @@
       }
     }
 
+    @media (max-width: 768px) {
+      #dna-footer {
+        position: relative;
+        margin-top: 20px;
+      }
+    }
+
     @media (max-width: 400px) {
       .page {
         padding: 0 12px;
@@ -422,7 +423,9 @@
       <p>I am a biotechnology undergraduate with an interest in computational genomics and bioinformatics.</p>
       <p>
         I am currently interested in building tools for single-cell rna sequence analysis, and how machine learning can
-        be used to analyze biological datasets, and am also interested in how different models can be used to predict
+        be used to analyze biological datasets,
+
+        I am also interested in how different models can be used to predict
         protein
         structures and interactions.
       </p>
