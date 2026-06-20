@@ -28,7 +28,6 @@
       line-height: 1.65;
       -webkit-font-smoothing: antialiased;
       position: relative;
-      padding-bottom: 80px;
     }
 
     a { color: var(--blue); text-decoration: none; }
@@ -168,34 +167,17 @@
 
     /* ── DNA FOOTER ───────────────────────────────────── */
     #dna-footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
       width: 100vw;
-      z-index: -1;
-      padding: 0;
+      position: relative;
+      left: 50%;
+      right: 50%;
+      margin-left: -50vw;
+      margin-right: -50vw;
       overflow: hidden;
+      margin-top: 40px;
       pointer-events: none;
     }
     canvas#dna-canvas { display: block; width: 100%; height: 60px; }
-
-    /* ── FOOTER ───────────────────────────────────────── */
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100vw;
-      padding: 12px 0;
-      text-align: center;
-      font-size: 10px;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
-      color: #888;
-      z-index: 10;
-      background: rgba(245, 245, 245, 0.85);
-      backdrop-filter: blur(5px);
-    }
-    footer span { color: var(--green); }
 
     /* ── RESPONSIVE ───────────────────────────────────── */
     @media (max-width: 600px) {
@@ -204,7 +186,6 @@
       .name { font-size: 22px; }
       .nav-row a { padding: 0 8px; font-size: 11px; }
       .proj-item { grid-template-columns: 20px 1fr; gap: 0 8px; padding: 10px 0; }
-      footer { font-size: 8px; padding: 8px 0; }
     }
   </style>
 </head>
@@ -288,10 +269,6 @@
   <div id="dna-footer">
     <canvas id="dna-canvas"></canvas>
   </div>
-
-  <footer>
-    <span>Computational Biology</span> | Bioinformatics | <span>Variant Interpretation</span> | Systems Genomics
-  </footer>
 
 </div><!-- /page -->
 
